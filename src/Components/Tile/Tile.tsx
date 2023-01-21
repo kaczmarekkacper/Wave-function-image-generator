@@ -7,6 +7,7 @@ import right from "../../tiles/demo/right.png";
 import up from "../../tiles/demo/up.png";
 
 const getImage = new Map<string, string>([
+  ['null', blank],
   ["blank", blank],
   ["down", down],
   ["left", left],
@@ -19,8 +20,8 @@ type TileProps = {
 };
 
 function Tile(props: TileProps) {
-  console.log(getImage.get(props.image));
-  return <img src={getImage.get(props.image)} width={100} height={100} />;
+  // return <div className="tile"><img title={props.image} src={getImage.get(props.image)} width={100} height={100} key={props.key} /></div>;
+  return <img title={props.image} src={getImage.get(props.image)} width={100} height={100} />;
 }
 
 export default Tile;

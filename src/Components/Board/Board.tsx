@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import reportWebVitals from "../../reportWebVitals";
 import Tile from "../Tile";
 
 type BoardProps = {
@@ -10,7 +9,6 @@ type imageMetadata = {
   image: string;
   entropy: number;
   chosen: boolean;
-  key: string;
 };
 
 function Board(props: BoardProps) {
@@ -25,7 +23,6 @@ function Board(props: BoardProps) {
           image: "blank",
           entropy: Infinity,
           chosen: false,
-          key: `${i}x${j}`,
         });
       }
     }
@@ -35,10 +32,10 @@ function Board(props: BoardProps) {
   return (
     <>
       {!!grid ? (
-        grid.map((col) => {
-          col.map((row) => {
-            <Tile image={row.image} key={row.key} />;
-          });
+        grid.map((col: imageMetadata[], i) => {
+          return <div className='column' key={i}>{col.map((row: imageMetadata, j) => {
+            return <Tile image={row.image}  key={`${i}x${j}`}/>;
+          })}</div>;
         })
       ) : (
         <h1>No grid</h1>
