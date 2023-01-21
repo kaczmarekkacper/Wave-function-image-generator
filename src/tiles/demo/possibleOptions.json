@@ -1,0 +1,32 @@
+{
+  "blank": {
+    "up": ["blank", "up"],
+    "right": ["blank", "right"],
+    "down": ["blank", "down"],
+    "left": ["blank", "left"]
+  },
+  "up": {
+    "up": ["right", "down", "left"],
+    "right": ["up", "down", "left"],
+    "down": ["blank", "down"],
+    "left": ["up", "right", "down"]
+  },
+  "right": {
+    "up": ["right", "down", "left"],
+    "right": ["up", "down", "left"],
+    "down": ["up", "right", "left"],
+    "left": ["blank", "left"]
+  },
+  "down": {
+    "up": ["blank", "up"],
+    "right": ["up", "down", "left"],
+    "down": ["up", "right", "left"],
+    "left": ["up", "right", "down"]
+  },
+  "left": {
+    "up": ["right", "down", "left"],
+    "right": ["blank", "right"],
+    "down": ["up", "right", "left"],
+    "left": ["up", "right", "down"]
+  }
+}
