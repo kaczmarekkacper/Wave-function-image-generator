@@ -2,11 +2,11 @@ import React from "react";
 
 import black from "../../tiles/black.png";
 
-import blank from "../../tiles/demo/blank.png";
-import down from "../../tiles/demo/down.png";
-import left from "../../tiles/demo/left.png";
-import right from "../../tiles/demo/right.png";
-import up from "../../tiles/demo/up.png";
+import blank from "../../tiles/mountains/blank.png";
+import down from "../../tiles/mountains/down.png";
+import left from "../../tiles/mountains/left.png";
+import right from "../../tiles/mountains/right.png";
+import up from "../../tiles/mountains/up.png";
 
 const getImage = new Map<string | null, string>([
   [null, black],
@@ -19,6 +19,7 @@ const getImage = new Map<string | null, string>([
 
 type TileProps = {
   image: string | null;
+  size: number;
 };
 
 function Tile(props: TileProps) {
@@ -27,8 +28,8 @@ function Tile(props: TileProps) {
     <img
       title={!!props.image ? props.image : ""}
       src={getImage.get(props.image)}
-      width={100}
-      height={100}
+      width={props.size}
+      height={props.size}
     />
   );
 }

@@ -19,6 +19,7 @@ type possibleDirectionType = {
 };
 
 type BoardProps = {
+  boardSize: number;
   gridSize: number;
   options: string[];
 };
@@ -33,8 +34,51 @@ type ImageMetadata = {
 const Board = (props: BoardProps) => {
   const [grid, setGrid] = useState<ImageMetadata[][]>([]);
   const [possibleOptions] = useState<possibleOptionsType>(possibleOptionsJson);
+  const [tileSize, setTileSize] = useState<number>(0);
 
   useEffect(() => {
+    resetGrid();
+  }, [props.gridSize]);
+
+  useEffect(() => {
+    setTileSize(props.boardSize / props.gridSize);
+  }, [props.boardSize]);
+
+  const revealTile = () => {
+    let gridCopy = JSON.parse(JSON.stringify(grid));
+    let lowestEntropyTile: ImageMetadata | null = findLowestEntropyTile(
+      gridCopy
+    );
+    if (!lowestEntropyTile) {
+      gridCopy = resetGrid();
+      lowestEntropyTile = findLowestEntropyTile(gridCopy);
+      if (!lowestEntropyTile) return;
+    }
+    const possibleOptions = lowestEntropyTile.options;
+    const selectedOption = getRandomElement(possibleOptions);
+    const x = lowestEntropyTile.coords[0];
+    const y = lowestEntropyTile.coords[1];
+    gridCopy[x][y].image = selectedOption;
+    gridCopy[x][y].options = [];
+    gridCopy = recalculateOptions(gridCopy, lowestEntropyTile);
+    setGrid(gridCopy);
+  };
+
+  const findLowestEntropyTile = (
+    grid: ImageMetadata[][]
+  ): ImageMetadata | null => {
+    let grid1d = grid.flat();
+    grid1d = grid1d.filter((x) => x.image === null);
+    if (grid1d.length >= 1) {
+      let minEntropy = Math.min(...grid1d.map((x) => x.options.length));
+      let minTiles = grid1d.filter((x) => x.options.length === minEntropy);
+      const selectedElement: ImageMetadata = getRandomElement(minTiles);
+      return selectedElement;
+    }
+    return null;
+  };
+
+  const resetGrid = () => {
     let newGrid: ImageMetadata[][] = [];
     for (let i = 0; i < props.gridSize; i++) {
       newGrid.push([]);
@@ -48,62 +92,35 @@ const Board = (props: BoardProps) => {
       }
     }
     setGrid(newGrid);
-  }, [props.gridSize]);
-
-  const revealTile = () => {
-    const lowestEntropyTile: ImageMetadata | null = findLowestEntropyTile();
-    console.log(grid);
-    console.log(lowestEntropyTile);
-    if (lowestEntropyTile === null) return;
-    const possibleOptions = lowestEntropyTile.options;
-    const selectedOption = getRandomElement(possibleOptions);
-    let gridCopy = JSON.parse(JSON.stringify(grid));
-    let x = lowestEntropyTile.coords[0];
-    let y = lowestEntropyTile.coords[1];
-    gridCopy[x][y].image = selectedOption;
-    gridCopy[x][y].options = [];
-    gridCopy = recalculateOptions(gridCopy);
-    setGrid(gridCopy);
-  };
-
-  const findLowestEntropyTile = (): ImageMetadata | null => {
-    let grid1d = grid.flat();
-    grid1d = grid1d.filter((x) => x.image === null);
-    if (grid1d.length > 1) {
-      let minEntropy = Math.min(...grid1d.map((x) => x.options.length));
-      let minTiles = grid1d.filter((x) => x.options.length === minEntropy);
-      const selectedElement: ImageMetadata = getRandomElement(minTiles);
-      return selectedElement;
-    }
-    return null;
+    return newGrid;
   };
 
   const getRandomElement = (arr: any[]) => {
-    return arr[Math.floor(Math.random() * arr.length)];
+    // return arr[Math.floor(Math.random() * arr.length)]; this is like never return last element in array
+    return arr.sort(() => 0.5 - Math.random())[0];
   };
 
-  const recalculateOptions = (grid: ImageMetadata[][]) => {
-    for (let i = 0; i < props.gridSize; ++i) {
-      for (let j = 0; j < props.gridSize; ++j) {
-        console.log(i, j);
-        if (grid[i][j].image !== null) continue;
-        const possibleCoords: [number, number, string][] = [
-          [i + 1, j, "down"],
-          [i, j + 1, "left"],
-          [i - 1, j, "up"],
-          [i, j - 1, "right"],
-        ];
-        for (let k = 0; k < possibleCoords.length; ++k) {
-          const coords = possibleCoords[k];
-          const x: number = coords[0];
-          const y: number = coords[1];
-          const direction: string = coords[2];
-          if (areCoordsValid(x, y)) {
-            console.log(grid[i][j].options);
-            grid[i][j].options = trimOptions(grid[i][j], grid[x][y], direction);
-            console.log(grid[i][j].options);
-          }
-        }
+  const recalculateOptions = (
+    grid: ImageMetadata[][],
+    lowestEntropyTile: ImageMetadata
+  ) => {
+    const x = lowestEntropyTile.coords[0];
+    const y = lowestEntropyTile.coords[1];
+    const possibleCoords: [number, number, string][] = [
+      [x + 1, y, "down"],
+      [x, y + 1, "right"],
+      [x - 1, y, "up"],
+      [x, y - 1, "left"],
+    ];
+    for (let k = 0; k < possibleCoords.length; ++k) {
+      const coords = possibleCoords[k];
+      const i: number = coords[0];
+      const j: number = coords[1];
+      const direction: string = coords[2];
+      if (areCoordsValid(i, j)) {
+        const tile = grid[x][y];
+        const neighbour = grid[i][j];
+        grid[i][j].options = trimOptions(tile, neighbour, direction);
       }
     }
     return grid;
@@ -118,14 +135,13 @@ const Board = (props: BoardProps) => {
     neighbour: ImageMetadata,
     direction: string
   ): string[] => {
-    const neighbourImage = neighbour.image;
-    if (neighbourImage === null) return tile.options;
+    const tileImage = tile.image;
+    if (tileImage === null) return neighbour.options;
     const possibilities =
-      possibleOptions[neighbourImage as keyof typeof possibleOptions][
+      possibleOptions[tileImage as keyof typeof possibleOptions][
         direction as keyof typeof possibleOptions.blank
       ];
-    console.log(possibilities);
-    const commonElements = getCommonElements(possibilities, tile.options);
+    const commonElements = getCommonElements(possibilities, neighbour.options);
     return commonElements;
   };
 
@@ -148,7 +164,7 @@ const Board = (props: BoardProps) => {
           return (
             <div className="column" key={i}>
               {col.map((row: ImageMetadata, j) => {
-                return <Tile image={row.image} key={row.key} />;
+                return <Tile image={row.image} key={row.key} size={tileSize} />;
               })}
             </div>
           );
