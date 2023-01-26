@@ -19,6 +19,7 @@ type possibleDirectionType = {
 };
 
 type BoardProps = {
+  "data-testid": string;
   boardSize: number;
   gridSize: number;
   options: string[];
@@ -158,7 +159,7 @@ const Board = (props: BoardProps) => {
   };
 
   return (
-    <>
+    <div data-testid={props["data-testid"]}>
       {!!grid ? (
         grid.map((col: ImageMetadata[], i) => {
           return (
@@ -175,7 +176,7 @@ const Board = (props: BoardProps) => {
       <button id="create" onClick={() => revealTile()}>
         Reveal tile
       </button>
-    </>
+    </div>
   );
 };
 

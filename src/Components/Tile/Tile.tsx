@@ -26,6 +26,7 @@ function Tile(props: TileProps) {
   // return <div className="tile"><img title={props.image} src={getImage.get(props.image)} width={100} height={100} key={props.key} /></div>;
   return (
     <img
+      data-testid={"img"}
       title={!!props.image ? props.image : ""}
       src={getImage.get(props.image)}
       width={props.size}
