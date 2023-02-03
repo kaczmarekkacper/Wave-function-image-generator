@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Tile from "../Tile";
 
 import possibleOptionsJson from "../../tiles/demo/possibleOptions.json";
+import InputBox from "../InputBox";
 
 type possibleOptionsType = {
   blank: possibleDirectionType;
@@ -19,9 +20,7 @@ type possibleDirectionType = {
 };
 
 type BoardProps = {
-  "data-testid": string;
   boardSize: number;
-  gridSize: number;
   options: string[];
 };
 
@@ -36,14 +35,15 @@ const Board = (props: BoardProps) => {
   const [grid, setGrid] = useState<ImageMetadata[][]>([]);
   const [possibleOptions] = useState<possibleOptionsType>(possibleOptionsJson);
   const [tileSize, setTileSize] = useState<number>(0);
+  const [gridSize, setGridSize] = useState<number>(5);
 
   useEffect(() => {
     resetGrid();
-  }, [props.gridSize]);
+  }, [gridSize]);
 
   useEffect(() => {
-    setTileSize(props.boardSize / props.gridSize);
-  }, [props.boardSize]);
+    setTileSize(props.boardSize / gridSize);
+  }, [props.boardSize, gridSize]);
 
   const revealTile = () => {
     let gridCopy = JSON.parse(JSON.stringify(grid));
@@ -81,9 +81,9 @@ const Board = (props: BoardProps) => {
 
   const resetGrid = () => {
     let newGrid: ImageMetadata[][] = [];
-    for (let i = 0; i < props.gridSize; i++) {
+    for (let i = 0; i < gridSize; i++) {
       newGrid.push([]);
-      for (let j = 0; j < props.gridSize; j++) {
+      for (let j = 0; j < gridSize; j++) {
         newGrid[i].push({
           image: null,
           options: props.options,
@@ -128,7 +128,7 @@ const Board = (props: BoardProps) => {
   };
 
   const areCoordsValid = (x: number, y: number) => {
-    return x >= 0 && x < props.gridSize && y >= 0 && y < props.gridSize;
+    return x >= 0 && x < gridSize && y >= 0 && y < gridSize;
   };
 
   const trimOptions = (
@@ -159,12 +159,18 @@ const Board = (props: BoardProps) => {
   };
 
   return (
-    <div data-testid={props["data-testid"]}>
+    <div data-testid="board">
+      <InputBox
+        label="How many tiles: "
+        type="number"
+        setValue={setGridSize}
+        defaultValue={gridSize}
+      />
       {!!grid ? (
         grid.map((col: ImageMetadata[], i) => {
           return (
             <div className="column" key={i}>
-              {col.map((row: ImageMetadata, j) => {
+              {col.map((row: ImageMetadata) => {
                 return <Tile image={row.image} key={row.key} size={tileSize} />;
               })}
             </div>
